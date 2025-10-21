@@ -289,6 +289,7 @@
                 
                 cintaContainer.appendChild(celda);
             }
+			}
 
 			// Agregar entrada al historial
 	        function agregarAlHistorial(mensaje) {
@@ -302,5 +303,16 @@
 	            historialContainer.appendChild(item);
 	            historialContainer.scrollTop = historialContainer.scrollHeight;
 	        }
+
+		// Detener simulación
+        function detenerSimulacion() {
+            maquinaTuring.ejecutando = false;
+            document.getElementById('btnPaso').disabled = true;
+            document.getElementById('btnDetener').disabled = true;
+            agregarAlHistorial("Simulación detenida por el usuario.");
         }
 
+        // Reiniciar simulación
+        function reiniciarSimulacion() {
+            iniciarSimulacion();
+        }
