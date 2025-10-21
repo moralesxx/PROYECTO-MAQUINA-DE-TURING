@@ -289,4 +289,18 @@
                 
                 cintaContainer.appendChild(celda);
             }
+
+			// Agregar entrada al historial
+	        function agregarAlHistorial(mensaje) {
+	            maquinaTuring.historial.push(mensaje);
+	            const historialContainer = document.getElementById('historial');
+	            
+	            const item = document.createElement('div');
+	            item.className = 'history-item';
+	            item.textContent = mensaje;
+	            
+	            historialContainer.appendChild(item);
+	            historialContainer.scrollTop = historialContainer.scrollHeight;
+	        }
         }
+
