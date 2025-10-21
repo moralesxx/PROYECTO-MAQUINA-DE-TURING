@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<title> Máquina de turing </title>
+<!--Defino como se vera mi GUI-->
+<style>
+	* {
+	/*Para toda la pagina */
+		box-sizing: border-box;
+		font-family: 'Century Gothic';
+        }
+	/*Para el cuerpo/body de la pagina*/
+        body{
+        	margin: 0;
+    		padding: 20px;
+		background-color: #f7f5fa;
+	        color: #555;
+        }
+	/*Contenedor principal*/
+        .container {
+        	max-width: 1200px;
+        	margin: 0 auto;
+       		background-color: white;
+        	padding: 20px;
+        	border-radius: 8px;
+        }
+	/*Titulo*/
+        h1 {
+        	text-align: center;
+        	color: #3a2d47;
+        	margin-bottom: 30px;
+        }
+	/*Cajita*/
+        .panel {
+        	margin-bottom: 20px;
+        	padding: 15px;
+        	border: 1px solid #ddd;
+        	border-radius: 5px;
+        	background-color: #f9f9f9;
+        }
+	/*Titulo dentro de las cajitas*/
+        .panel-title{
+        	font-weight: bold;
+        	margin-bottom: 10px;
+        	color: #3a2d47;
+       		border-bottom: 1px solid #ddd;
+        	padding-bottom: 5px;
+        }
+	/*Formulario*/
+        .form-group{
+		margin-bottom: 15px;
+	}
+	/*Label sobre los campos*/
+        label{
+        	display: block; 
+		margin-bottom: 5px; 
+		font-weight: 500;
+        }
+        input[type="text"], select {
+        	width: 100%;
+        	padding: 8px;
+        	border: 1px solid #ddd;
+        	border-radius: 4px;
+        }
+	/*Botones*/
+        button {
+        	background-color: #8c34e3;
+        	color: white;
+       		border: none;
+        	padding: 8px 15px;
+        	border-radius: 4px;
+        	cursor: pointer;
+        	margin-right: 10px;
+        	transition: background-color 0.3s;
+        }
+	/*Cambiar color cuando pase el mouse*/
+        button:hover {
+        	background-color: #792dc4;
+        }
+	/*Color para cuando el boton no esté disponible*/
+        button:disabled {
+        	background-color: #95a5a6;
+        	cursor: not-allowed;
+        }
+	/*Tabla*/
+        table {
+        	width: 100%;
+        	border-collapse: collapse;
+        	margin-bottom: 15px;
+        }
+        th, td {
+        	border: 1px solid #ddd;
+        	padding: 8px;
+        	text-align: left;
+        }
+	/*Encabezado de tablas*/
+        th {
+        	background-color: #f2f2f2;
+        }
+	/*Caja para la cinta*/
+        .tape-container {
+        	display: flex;
+        	overflow-x: auto;
+        	margin: 20px 0;
+        	padding: 10px;
+        	background-color: #f0f0f0;
+        	border-radius: 4px;
+        }
+	/*Celdas de la cinta*/
+        .tape-cell {
+        	min-width: 50px;
+        	height: 50px;
+        	border: 1px solid #ccc;
+        	display: flex;
+        	align-items: center;
+        	justify-content: center;
+        	font-weight: bold;
+        	background-color: white;
+        	margin-right: 2px;
+        }
+	/*Celdas activa*/
+        .tape-cell.active {
+        	background-color: #792dc4;
+        	color: white;
+        }
+        .status {
+        	padding: 10px;
+        	margin: 10px 0;
+        	border-radius: 4px;
+        	font-weight: bold;
+        }
+	/*Palabra aceptada*/
+        .status.accepted {
+        	background-color: #d4edda;
+        	color: #155724;
+        }
+	/*Palabra rechazada*/
+        .status.rejected {
+        	background-color: #f8d7da;
+        	color: #721c24;
+        }
+	/*Palabra en ejecucion*/
+        .status.running {
+        	background-color: #cce5ff;
+        	color: #004085;
+        }
+	/*Caja para mostrar que ha hecho la maquina de turing*/
+        .history-container {
+        	max-height: 200px;
+        	overflow-y: auto;
+        	border: 1px solid #ddd;
+         	padding: 10px;
+        	border-radius: 4px;
+        	background-color: #f9f9f9;
+        }
+        .history-item {
+        	margin-bottom: 5px;
+        	padding: 5px;
+        	border-bottom: 1px solid #eee;
+        }
+	/*Caja para pestañas*/
+        .tab-container {
+        	margin-bottom: 20px;
+        }
+	/*Botones para moverse de pestaña*/
+        .tab-buttons {
+        	display: flex;
+        	border-bottom: 1px solid #ddd;
+        }
+        .tab-button {
+        	padding: 10px 20px;
+        	background-color: #f2f2f2;
+        	border: 1px solid #ddd;
+        	border-bottom: none;
+        	border-radius: 5px 5px 0 0;
+        	margin-right: 5px;
+        	cursor: pointer;
+        }
+        .tab-button.active {
+        	background-color: white;
+        	border-bottom: 1px solid white;
+        	margin-bottom: -1px;
+        }
+        .tab-content {
+        	display: none;
+        	padding: 20px;
+        	border: 1px solid #ddd;
+        	border-top: none;
+        	border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+        	display: block;
+        }
+</style>
+</head>
+
+<body>
+<div class="container">
+        <h1>Simulador de Máquina de Turing</h1>
+        
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <div class="tab-button active" onclick="cambiarPestaña(0)">Configuración</div>
+                <div class="tab-button" onclick="cambiarPestaña(1)">Transiciones</div>
+                <div class="tab-button" onclick="cambiarPestaña(2)">Simulación</div>
+            </div>
+            
+            <div class="tab-content active" id="tab0">
+                <div class="panel">
+                    <div class="panel-title">Estados</div>
+                    <div class="form-group">
+                        <label for="estados">Estados (separados por coma):</label>
+                        <input type="text" id="estados" placeholder="q0, q1, q2, q3">
+                    </div>
+                    <div class="form-group">
+                        <label for="estadoInicial">Estado inicial:</label>
+                        <input type="text" id="estadoInicial" placeholder="q0">
+                    </div>
+                    <div class="form-group">
+                        <label for="estadosAceptacion">Estados de aceptación (separados por coma):</label>
+                        <input type="text" id="estadosAceptacion" placeholder="q3">
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Alfabetos</div>
+                    <div class="form-group">
+                        <label for="alfabetoEntrada">Alfabeto de entrada (separados por coma):</label>
+                        <input type="text" id="alfabetoEntrada" placeholder="0, 1">
+                    </div>
+                    <div class="form-group">
+                        <label for="alfabetoCinta">Alfabeto de cinta (separados por coma):</label>
+                        <input type="text" id="alfabetoCinta" placeholder="0, 1, X, Y, B">
+                    </div>
+                    <div class="form-group">
+                        <label for="simboloBlanco">Símbolo blanco:</label>
+                        <input type="text" id="simboloBlanco" value="B" maxlength="1">
+                    </div>
+                </div>
+                
+                <button onclick="guardarConfiguracion()">Guardar Configuración</button>
+            </div>
+            
+            <div class="tab-content" id="tab1">
+                <div class="panel">
+                    <div class="panel-title">Definir Transiciones</div>
+                    <div class="form-group">
+                        <label for="transEstado">Estado actual:</label>
+                        <input type="text" id="transEstado" placeholder="q0">
+                    </div>
+                    <div class="form-group">
+                        <label for="transLeer">Símbolo a leer:</label>
+                        <input type="text" id="transLeer" placeholder="0" maxlength="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="transNuevoEstado">Nuevo estado:</label>
+                        <input type="text" id="transNuevoEstado" placeholder="q1">
+                    </div>
+                    <div class="form-group">
+                        <label for="transEscribir">Símbolo a escribir:</label>
+                        <input type="text" id="transEscribir" placeholder="X" maxlength="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="transDireccion">Dirección:</label>
+                        <select id="transDireccion">
+                            <option value="L">Izquierda (L)</option>
+                            <option value="R">Derecha (R)</option>
+                            <option value="S">Permanecer (S)</option>
+                        </select>
+                    </div>
+                    <button onclick="agregarTransicion()">Agregar Transición</button>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Transiciones Definidas</div>
+                    <table id="tablaTransiciones">
+                        <thead>
+                            <tr>
+                                <th>Estado</th>
+                                <th>Leer</th>
+                                <th>Nuevo Estado</th>
+                                <th>Escribir</th>
+                                <th>Dirección</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las transiciones se agregarán aquí dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="tab2">
+                <div class="panel">
+                    <div class="panel-title">Simulación</div>
+                    <div class="form-group">
+                        <label for="cadenaEntrada">Cadena de entrada:</label>
+                        <input type="text" id="cadenaEntrada" placeholder="Ej: 1010">
+                    </div>
+                    <button onclick="iniciarSimulacion()">Iniciar Simulación</button>
+                    <button onclick="ejecutarPaso()" id="btnPaso" disabled>Ejecutar Paso</button>
+                    <button onclick="detenerSimulacion()" id="btnDetener" disabled>Detener</button>
+                    <button onclick="reiniciarSimulacion()">Reiniciar</button>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Estado Actual</div>
+                    <div id="estadoActual">No iniciado</div>
+                    <div class="status" id="estadoAceptacion"></div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Cinta</div>
+                    <div class="tape-container" id="cinta">
+                        <!-- La cinta se generará aquí dinámicamente -->
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Historial de Ejecución</div>
+                    <div class="history-container" id="historial">
+                        <!-- El historial se agregará aquí dinámicamente -->
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">Guardar/Cargar Configuración</div>
+                    <button onclick="guardarMaquina()">Guardar Máquina</button>
+                    <button onclick="cargarMaquina()">Cargar Máquina</button>
+                    <input type="file" id="cargarArchivo" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<script>
+		//Para cambiar de pestañas
+		function cambiarPestaña(i){
+			const tabs = document.querySelectorAll('.tab-content');
+    			const buttons = document.querySelectorAll('.tab-button');
+    
+    			// Quitar clase 'active' de todas las pestañas y botones
+    			tabs.forEach(tab => tab.classList.remove('active'));
+    			buttons.forEach(btn => btn.classList.remove('active'));
+    
+   			// Activar la pestaña y botón seleccionados
+    			document.getElementById('tab' + i).classList.add('active');
+    			buttons[i].classList.add('active');
+		}	
+		
+		const maquinaTuring = {
+			estados: [],
+			estadoInicial: "",
+			estadosAceptacion: [],
+			alfabetoEntrada: [],
+			alfabetoCinta: [],
+			simboloBlanco: "B",
+			transiciones: {},
+			cinta: [],
+			cabeza: 0,
+			estadoActual: "",
+			ejecutando: false,
+			historial: []
+		};
+
+		// Guardar configuración básica
+	        function guardarConfiguracion() {
+ 	           const estados = document.getElementById('estados').value.split(',').map(e => e.trim());
+        	    const estadoInicial = document.getElementById('estadoInicial').value.trim();
+  	          const estadosAceptacion = document.getElementById('estadosAceptacion').value.split(',').map(e => e.trim());
+	            const alfabetoEntrada = document.getElementById('alfabetoEntrada').value.split(',').map(e => e.trim());
+   	         const alfabetoCinta = document.getElementById('alfabetoCinta').value.split(',').map(e => e.trim());
+        	    const simboloBlanco = document.getElementById('simboloBlanco').value.trim();
+            
+ 	           // Validaciones básicas
+        	    if (estados.length === 0 || estadoInicial === "" || estadosAceptacion.length === 0 || 
+        	        alfabetoEntrada.length === 0 || alfabetoCinta.length === 0 || simboloBlanco === "") {
+ 	               alert("Por favor, complete todos los campos de configuración.");
+                	return;
+            		}
+            
+            	if (!estados.includes(estadoInicial)) {
+                	alert("El estado inicial debe estar en la lista de estados.");
+               		return;
+            	}
+            
+            	for (let estado of estadosAceptacion) {
+                	if (!estados.includes(estado)) {
+                    	alert("Los estados de aceptación deben estar en la lista de estados.");
+                    	return;
+                	}
+            	}
+            
+            	for (let simbolo of alfabetoEntrada) {
+                	if (!alfabetoCinta.includes(simbolo)) {
+                    	alert("El alfabeto de entrada debe ser un subconjunto del alfabeto de cinta.");
+                    	return;
+                	}
+            	}
+            
+            	if (!alfabetoCinta.includes(simboloBlanco)) {
+                	alert("El símbolo blanco debe estar en el alfabeto de cinta.");
+                	return;
+            	}
+            
+            	// Guardar configuración
+            	maquinaTuring.estados = estados;
+            	maquinaTuring.estadoInicial = estadoInicial;
+            	maquinaTuring.estadosAceptacion = estadosAceptacion;
+            	maquinaTuring.alfabetoEntrada = alfabetoEntrada;
+            	maquinaTuring.alfabetoCinta = alfabetoCinta;
+            	maquinaTuring.simboloBlanco = simboloBlanco;
+            
+            	alert("Configuración guardada correctamente.");
+            	cambiarPestaña(1); // Cambiar a pestaña de transiciones
+        	}
+
+		// Agregar una transición
+        function agregarTransicion() {
+            const estado = document.getElementById('transEstado').value.trim();
+            const leer = document.getElementById('transLeer').value.trim();
+            const nuevoEstado = document.getElementById('transNuevoEstado').value.trim();
+            const escribir = document.getElementById('transEscribir').value.trim();
+            const direccion = document.getElementById('transDireccion').value;
+            
+            // Validaciones
+            if (estado === "" || leer === "" || nuevoEstado === "" || escribir === "" || direccion === "") {
+                alert("Por favor, complete todos los campos de la transición.");
+                return;
+            }
+            
+            if (!maquinaTuring.estados.includes(estado)) {
+                alert("El estado actual no está en la lista de estados.");
+                return;
+            }
+            
+            if (!maquinaTuring.estados.includes(nuevoEstado)) {
+                alert("El nuevo estado no está en la lista de estados.");
+                return;
+            }
+            
+            if (!maquinaTuring.alfabetoCinta.includes(leer)) {
+                alert("El símbolo a leer no está en el alfabeto de cinta.");
+                return;
+            }
+            
+            if (!maquinaTuring.alfabetoCinta.includes(escribir)) {
+                alert("El símbolo a escribir no está en el alfabeto de cinta.");
+                return;
+            }
+            
+            // Agregar transición
+            if (!maquinaTuring.transiciones[estado]) {
+                maquinaTuring.transiciones[estado] = {};
+            }
+            
+            maquinaTuring.transiciones[estado][leer] = {
+                nuevoEstado: nuevoEstado,
+                escribir: escribir,
+                direccion: direccion
+            };
+            
+            // Actualizar tabla
+            const tabla = document.getElementById('tablaTransiciones').getElementsByTagName('tbody')[0];
+            const nuevaFila = tabla.insertRow();
+            
+            nuevaFila.insertCell(0).textContent = estado;
+            nuevaFila.insertCell(1).textContent = leer;
+            nuevaFila.insertCell(2).textContent = nuevoEstado;
+            nuevaFila.insertCell(3).textContent = escribir;
+            nuevaFila.insertCell(4).textContent = direccion;
+            
+            const celdaAccion = nuevaFila.insertCell(5);
+            const btnEliminar = document.createElement('button');
+            btnEliminar.textContent = "Eliminar";
+            btnEliminar.onclick = function() {
+                eliminarTransicion(estado, leer);
+                tabla.removeChild(nuevaFila);
+            };
+            celdaAccion.appendChild(btnEliminar);
+            
+            // Limpiar campos
+            document.getElementById('transEstado').value = "";
+            document.getElementById('transLeer').value = "";
+            document.getElementById('transNuevoEstado').value = "";
+            document.getElementById('transEscribir').value = "";
+            document.getElementById('transDireccion').value = "L";
+        }
+
+	function eliminarTransicion(estado, leer) {
+            if (maquinaTuring.transiciones[estado] && maquinaTuring.transiciones[estado][leer]) {
+                delete maquinaTuring.transiciones[estado][leer];
+                
+                // Si no hay más transiciones para este estado, eliminar el estado
+                if (Object.keys(maquinaTuring.transiciones[estado]).length === 0) {
+                    delete maquinaTuring.transiciones[estado];
+                }
+            }
+        }
+
+	function iniciarSimulacion() {
+            const cadenaEntrada = document.getElementById('cadenaEntrada').value;
+            
+            // Validar cadena de entrada
+            for (let i = 0; i < cadenaEntrada.length; i++) {
+                if (!maquinaTuring.alfabetoEntrada.includes(cadenaEntrada[i])) {
+                    alert("La cadena contiene símbolos no válidos: " + cadenaEntrada[i]);
+                    return;
+                }
+            }
+            
+            // Inicializar cinta
+            maquinaTuring.cinta = cadenaEntrada.split('');
+            maquinaTuring.cabeza = 0;
+            maquinaTuring.estadoActual = maquinaTuring.estadoInicial;
+            maquinaTuring.ejecutando = true;
+            maquinaTuring.historial = [];
+            
+            // Habilitar/deshabilitar botones
+            document.getElementById('btnPaso').disabled = false;
+            document.getElementById('btnDetener').disabled = false;
+            
+            // Actualizar interfaz
+            actualizarCinta();
+            document.getElementById('estadoActual').textContent = "Estado: " + maquinaTuring.estadoActual;
+            document.getElementById('estadoAceptacion').textContent = "";
+            document.getElementById('estadoAceptacion').className = "status";
+            
+            // Agregar al historial
+            agregarAlHistorial("Simulación iniciada. Estado: " + maquinaTuring.estadoActual);
+        }
+
+	function ejecutarPaso() {
+            if (!maquinaTuring.ejecutando) return;
+            
+            const simboloActual = maquinaTuring.cinta[maquinaTuring.cabeza] || maquinaTuring.simboloBlanco;
+            
+            // Verificar si existe transición para el estado actual y símbolo leído
+            if (!maquinaTuring.transiciones[maquinaTuring.estadoActual] || 
+                !maquinaTuring.transiciones[maquinaTuring.estadoActual][simboloActual]) {
+                
+                maquinaTuring.ejecutando = false;
+                const esAceptado = maquinaTuring.estadosAceptacion.includes(maquinaTuring.estadoActual);
+                
+                if (esAceptado) {
+                    document.getElementById('estadoAceptacion').textContent = "CADENA ACEPTADA";
+                    document.getElementById('estadoAceptacion').className = "status accepted";
+                    agregarAlHistorial("Cadena aceptada. Estado final: " + maquinaTuring.estadoActual);
+                } else {
+                    document.getElementById('estadoAceptacion').textContent = "CADENA RECHAZADA";
+                    document.getElementById('estadoAceptacion').className = "status rejected";
+                    agregarAlHistorial("Cadena rechazada. No hay transición definida para (" + 
+                                      maquinaTuring.estadoActual + ", " + simboloActual + ")");
+                }
+                
+                document.getElementById('btnPaso').disabled = true;
+                return;
+            }
+            
+            // Obtener la transición
+            const transicion = maquinaTuring.transiciones[maquinaTuring.estadoActual][simboloActual];
+            
+            // Ejecutar la transición
+            // 1. Escribir en la cinta
+            maquinaTuring.cinta[maquinaTuring.cabeza] = transicion.escribir;
+            
+            // 2. Mover la cabeza
+            if (transicion.direccion === 'L') {
+                maquinaTuring.cabeza--;
+                if (maquinaTuring.cabeza < 0) {
+                    maquinaTuring.cabeza = 0; // En una implementación real, se expandiría la cinta
+                }
+            } else if (transicion.direccion === 'R') {
+                maquinaTuring.cabeza++;
+                // En una implementación real, se expandiría la cinta si es necesario
+            }
+            // Para 'S' (permanecer), no se mueve la cabeza
+            
+            // 3. Cambiar estado
+            const estadoAnterior = maquinaTuring.estadoActual;
+            maquinaTuring.estadoActual = transicion.nuevoEstado;
+            
+            // Actualizar interfaz
+            actualizarCinta();
+            document.getElementById('estadoActual').textContent = "Estado: " + maquinaTuring.estadoActual;
+            
+            // Agregar al historial
+            agregarAlHistorial("Transición: (" + estadoAnterior + ", " + simboloActual + ") → (" + 
+                             transicion.nuevoEstado + ", " + transicion.escribir + ", " + transicion.direccion + ")");
+            
+            // Verificar si es estado de aceptación
+            if (maquinaTuring.estadosAceptacion.includes(maquinaTuring.estadoActual)) {
+                document.getElementById('estadoAceptacion').textContent = "CADENA ACEPTADA";
+                document.getElementById('estadoAceptacion').className = "status accepted";
+                maquinaTuring.ejecutando = false;
+                document.getElementById('btnPaso').disabled = true;
+                agregarAlHistorial("Cadena aceptada. Estado final: " + maquinaTuring.estadoActual);
+            }
+        }
+
+
+	// Actualizar visualización de la cinta
+        function actualizarCinta() {
+            const cintaContainer = document.getElementById('cinta');
+            cintaContainer.innerHTML = '';
+            
+            // Determinar rango de celdas a mostrar
+            const inicio = Math.max(0, maquinaTuring.cabeza - 5);
+            const fin = Math.max(maquinaTuring.cabeza + 6, maquinaTuring.cinta.length);
+            
+            for (let i = inicio; i < fin; i++) {
+                const celda = document.createElement('div');
+                celda.className = 'tape-cell';
+                
+                if (i === maquinaTuring.cabeza) {
+                    celda.classList.add('active');
+                }
+                
+                if (i < maquinaTuring.cinta.length) {
+                    celda.textContent = maquinaTuring.cinta[i];
+                } else {
+                    celda.textContent = maquinaTuring.simboloBlanco;
+                }
+                
+                cintaContainer.appendChild(celda);
+            }
+        }
+	</script>
+</body>
+</html>
