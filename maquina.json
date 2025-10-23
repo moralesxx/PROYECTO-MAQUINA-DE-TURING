@@ -1,0 +1,13 @@
+{
+    "alfabeto": ["0", "1", "B"],
+    "estados": ["q0", "q1", "q2", "q3", "q4", "qf"],
+    "estadoInicial": "q0",
+    "estadosAceptacion": ["qf"],
+    "transiciones": [
+        {"actual": "q0", "simbolo": "0", "nuevo": "q1", "escribir": "0", "movimiento": "R"},
+        {"actual": "q1", "simbolo": "0", "nuevo": "q2", "escribir": "0", "movimiento": "R"},
+        {"actual": "q2", "simbolo": "1", "nuevo": "q3", "escribir": "1", "movimiento": "R"},
+        {"actual": "q3", "simbolo": "1", "nuevo": "q4", "escribir": "1", "movimiento": "R"},
+        {"actual": "q4", "simbolo": "B", "nuevo": "qf", "escribir": "B", "movimiento": "S"}
+    ]
+}
